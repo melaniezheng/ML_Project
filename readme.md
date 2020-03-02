@@ -7,3 +7,6 @@
 - /Model - for modeling with ridge, lasso, elastic net, gradient boosting, catBoost, XGBoost, LightGBM, and stacked regressor models. Model visualization is also included in this folder.
 
 - /Data - contains raw and processed data for this project.
+
+- /Submissions - submission files to Kaggle.
+
