@@ -40,112 +40,34 @@ The general philosophy for a given variable X (where X represents a housing feat
 The fourteen feature variables with pseudo-missingness were: Alley, BsmtCond, BsmtQual, BsmtFinType1, Fence, Fireplace, GarageCond, GarageFinish, GarageQual, GarageType, GarageYrBlt, MasVnrType, MiscFeature, and PoolQC.
 
 #### True-Missing Values
-# #### Actual Missing
-# 
-# - Electrical --> 'Mode'
-# - MasVnrArea --> 'Mode' (group by Neighborhood & Year Built)
-# - LotFrontage --> Impute with KNN based on LotConfig, LotShape, and LotArea (Both LotFrontage and missingness in LotFrontage is not evenly distributed across neighborhoods, so Median imputation is less valid)
-# - BsmtExposure --> 'Mode' (thirty-seven rows had no values for this feature *or* any other basement feature; those were imputed to be "No Basement." One row had values for other basement columns but not this one; imputed via Mode (group by Neighborhood & Year Built))
-# - BsmtFinType2 --> 'Mode' (see above comment)
+In addition to the feature variables with pseudo-missingness, there were five features where missing values indicated true missing data. Those variables were: Electrical, MasVnrArea, LotFrontage, BsmtExposure, and BsmtFinType2. Because many of our machine learning modesls are unable to handle missing data, it was necessary for us to impute the missing values for these feature variables given the data to which we did have access.
+
+By and large, the variables were imputed using Mode imputation. When doing so, feature variables were grouped by other, relevant features (for example, MasVnrArea was grouped by Neighboorhood and YearBuilt) to provide a more accurate and granular imputation.
+
+Additionally, a handful of variables related to garages and basements exhibited both pseudo-missingness and true missingness. Those variables were first processed to fill any pseudo-missingness. This was achieved by imputed rows that corresponded to missingness in  *all* features related to the relevant housing amenity (garage or basement) with the same methodolgy described in the pseudo-missingness section above; once that was taken care of, the remaining missing values were imputed using the appropriate mode imputation.
 
 #### Categorical Variables
-#### Ord Categorical & Numeric Features
+The distribution of a large number of categorical variables was such that many of the features were dominated by a single value, with the remaining values being more sparsely populated. Because this sparsity resulted in a lack of representative data, and in an attempt to reduce the feature space expansion resulting from the need to dummify categorical features, we consolidated those categorical variables to follow the general pattern of "Dominant Class(es), Other."
 
+Feature variables engineered in this way were: Exterior1st, RoofMatl, RoofStyle, Condition1, LotShape, Functional, Electrical, Heating, Foundation, and SaleType.
 
 ### New Feature Variables
-#  ###### New Features
+To reduce the size of the feature space without losing important data, the following feature variables were combined to create new feature variables:
 
-#  - Total SF = 1stFlrSF + 2ndFlrSF + TotalBsmtSF
-#  - TotalFullBath = BsmtFullBath + FullBath
-#  - TotalHalfBath = BsmtHalfBath + HalfBath
-#  - IsPool  --- Categorical
-#  - IsGarage  --- Categorical
++ 1stFlrSF + 2ndFlrSF + TotalBsmtSF -> TotalSF
++ BsmtFullBath + FullBath -> TotalFullBath
++ BsmtHalfBath + HalfBath -> TotalHalfBath
+
+Additionally, new categorical feature variables were created to indicate whether a given home had a garage (IsGarage) or a pool (IsPool).
 
 ### Dummifying Feature Variables
-# #### Categorical Dummify Var
-# 
-#  - LandContour        object --- 4 values, dummify
-#  - Exterior1st        object --- 14 values, **Top5(VinylSd, MetalSd, HdBoard, Wd Sdng, Plywood) or Other.
-#  - RoofMatl           object --- Dummify. **CompShg or Other
-#  - RoofStyle          object --- Dummify. **Gable, Hip or Other.
-#  - MSZoning           object --- Dummify.
-#  - Street             object --- Dummify. 2 values
-#  - Alley              object --- Dummify. 3 values
-#  - HouseStyle         object --- Dummify. 8 values
-#  - BldgType           object --- Dummify. 5 values
-#  - Condition2         object --- Drop, redundant with Condition1
-#  - Condition1         object --- Dummify. **Norm or Other.
-#  - Exterior2nd        object --- Drop, redundant with Exterior1, 
-#  - LandSlope          object --- Dummify. 3 values
-#  - LotConfig          object --- Dummify. 3 values
-#  - Utilities          object --- Drop. 1 observation 
-#  - LotShape           object --- Dummify. **Reg or IReg
-#  - Neighborhood       object --- Dummify.
-#  - ExterCond          object --- Dummify.
-#  - ExterQual          object --- Dummify.
-#  - GarageType         object --- Dummify.
-#  - GarageQual         object --- Drop, redundant with GarageCond.
-#  - FireplaceQu        object --- Dummify. **FirePlace or No Fireplace
-#  - PavedDrive         object --- Dummify.
-#  - Functional         object --- Dummify. **Y or N(P will be N)
-#  - KitchenQual        object --- Dummify.
-#  - PoolQC             object --- Drop. IsPool col is created.
-#  - Fence              object --- Dummify.
-#  - MiscFeature        object --- Drop. redundant with MiscValue
-#  - Electrical         object --- Dummify. **SBrkr or Other
-#  - MasVnrType         object --- Dummify.
-#  - CentralAir         object --- Dummify.
-#  - SaleCondition      object --- Dummify.
-#  - HeatingQC          object --- Dummify.
-#  - Heating            object --- Dummify. **GasA or Other
-#  - BsmtFinType2       object --- Drop.
-#  - BsmtFinType1       object --- Dummify.
-#  - BsmtExposure       object --- Dummify.
-#  - BsmtCond           object --- Dummify.
-#  - BsmtQual           object --- Dummify.
-#  - Foundation         object --- Dummify. **PConc, CBlock, BrkTil, Other
-#  - GarageFinish       object --- Dummify. 
-#  - SaleType           object --- Dummify. **WD, New, COD, Other
-#  - GarageCond         object --- Dummify.
+All categorical feature variables were dummified using One Hot Encoding for use in linear refgression-based machine learning models.
 
 ### Removed Feature Variables
-The below is a 
-#  - Id               float64 --- Drop
-#  - BsmtUnfSF        float64 --- Drop
-#  - TotalBsmtSF      float64 --- Drop, re-engineered.
-#  - SalePrice        float64 --- Target, Drop
-#  - 1stFlrSF         float64 --- Drop, re-engineered.
-#  - 2ndFlrSF         float64 --- Drop, re-engineered.
-#  - LowQualFinSF     float64 --- Drop, 99% has value 0
-#  - GrLivArea        float64 --- Drop, correlated with total SF and rooms above ground
-#  - BsmtFullBath     float64 --- Drop, re-engineered.
-#  - BsmtHalfBath     float64 --- Drop, re-engineered.
-#  - FullBath         float64 --- Drop, re-engineered.
-#  - HalfBath         float64 --- Drop, re-engineered.
-#  - BedroomAbvGr     float64
-#  - KitchenAbvGr     float64
-#  - TotRmsAbvGrd     float64
-#  - Fireplaces       float64
-#  - GarageYrBlt      float64 --- Drop, correlated with YrBuilt
-#  - GarageCars       float64 --- Drop, correlated with Area
-#  - GarageArea       float64 
-#  - WoodDeckSF       float64 
-#  - OpenPorchSF      float64 --- dummify 1 for OpenPorch 0 for Not OpenPorch
-#  - EnclosedPorch    float64 --- dummify if porch 1, else 0
-#  - 3SsnPorch        float64 --- dummify if porch 1, else 0
-#  - ScreenPorch      float64 --- dummify if porch 1, else 0
-#  - PoolArea         float64 --- Drop, over 99% do not have pools
-#  - MiscVal          float64 --- **add 1 and then Log transform 
-#  - MoSold           float64 --- dummify
-#  - YrSold           float64 --- dummify
-#  - BsmtFinSF2       float64 --- Drop
-#  - BsmtFinSF1       float64 --- Drop
-#  - IsPool           float64 --- Categorical
-#  - MSSubClass       float64 --- Categorical - convert back to Str
-#  - LotFrontage      float64
-#  - MasVnrArea       float64
-#  - OverallQual      float64 --- dummify
-#  - LotArea          float64 --- **add 1 and then Log transform 
-#  - OverallCond      float64 --- dummify
-#  - YearBuilt        float64
-#  - YearRemodAdd     float64
+Some feature variables were rendered unnecessary by the engineering above. Others were so highly correlated with other variables that inclduing them violated core assumptions of linear models, and yet others had too few observations to be statistically useful.
+
++ Target Variable: SalePrice
++ Dropped due to no useful information: Id
++ Dropped due to re-engineering: TotalBsmtSF, 1stFlrSF, 2ndFlrSF, BsmtFullBath, BsmtHalfBath, FullBath, HalfBath
++ Dropped for correlation reasions: BsmtFinSF1, BsmtFinSF2, BsmtUnfSF, GrLivArea, GarageYrBlt, GarageCars
++ Dropped for lack of observations: LowQualFinSF, PoolArea
