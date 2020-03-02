@@ -402,119 +402,40 @@ summary {
 </div>
 <div id="true-missing-values" class="section level4">
 <h4>True-Missing Values</h4>
+<p>In addition to the feature variables with pseudo-missingness, there were five features where missing values indicated true missing data. Those variables were: Electrical, MasVnrArea, LotFrontage, BsmtExposure, and BsmtFinType2. Because many of our machine learning modesls are unable to handle missing data, it was necessary for us to impute the missing values for these feature variables given the data to which we did have access.</p>
+<p>By and large, the variables were imputed using Mode imputation. When doing so, feature variables were grouped by other, relevant features (for example, MasVnrArea was grouped by Neighboorhood and YearBuilt) to provide a more accurate and granular imputation.</p>
+<p>Additionally, a handful of variables related to garages and basements exhibited both pseudo-missingness and true missingness. Those variables were first processed to fill any pseudo-missingness. This was achieved by imputed rows that corresponded to missingness in <em>all</em> features related to the relevant housing amenity (garage or basement) with the same methodolgy described in the pseudo-missingness section above; once that was taken care of, the remaining missing values were imputed using the appropriate mode imputation.</p>
 </div>
-</div>
-<div id="actual-missing" class="section level1">
-<h1>#### Actual Missing</h1>
-</div>
-<div id="section" class="section level1">
-<h1></h1>
-</div>
-<div id="electrical-mode" class="section level1">
-<h1>- Electrical –&gt; ‘Mode’</h1>
-</div>
-<div id="masvnrarea-mode-group-by-neighborhood-year-built" class="section level1">
-<h1>- MasVnrArea –&gt; ‘Mode’ (group by Neighborhood &amp; Year Built)</h1>
-</div>
-<div id="lotfrontage-impute-with-knn-based-on-lotconfig-lotshape-and-lotarea-both-lotfrontage-and-missingness-in-lotfrontage-is-not-evenly-distributed-across-neighborhoods-so-median-imputation-is-less-valid" class="section level1">
-<h1>- LotFrontage –&gt; Impute with KNN based on LotConfig, LotShape, and LotArea (Both LotFrontage and missingness in LotFrontage is not evenly distributed across neighborhoods, so Median imputation is less valid)</h1>
-</div>
-<div id="bsmtexposure-mode-thirty-seven-rows-had-no-values-for-this-feature-or-any-other-basement-feature-those-were-imputed-to-be-no-basement.-one-row-had-values-for-other-basement-columns-but-not-this-one-imputed-via-mode-group-by-neighborhood-year-built" class="section level1">
-<h1>- BsmtExposure –&gt; ‘Mode’ (thirty-seven rows had no values for this feature <em>or</em> any other basement feature; those were imputed to be “No Basement.” One row had values for other basement columns but not this one; imputed via Mode (group by Neighborhood &amp; Year Built))</h1>
-</div>
-<div id="bsmtfintype2-mode-see-above-comment" class="section level1">
-<h1>- BsmtFinType2 –&gt; ‘Mode’ (see above comment)</h1>
 <div id="categorical-variables" class="section level4">
 <h4>Categorical Variables</h4>
+<p>The distribution of a large number of categorical variables was such that many of the features were dominated by a single value, with the remaining values being more sparsely populated. Because this sparsity resulted in a lack of representative data, and in an attempt to reduce the feature space expansion resulting from the need to dummify categorical features, we consolidated those categorical variables to follow the general pattern of “Dominant Class(es), Other.”</p>
+<p>Feature variables engineered in this way were: Exterior1st, RoofMatl, RoofStyle, Condition1, LotShape, Functional, Electrical, Heating, Foundation, and SaleType.</p>
 </div>
-<div id="ord-categorical-numeric-features" class="section level4">
-<h4>Ord Categorical &amp; Numeric Features</h4>
 </div>
 <div id="new-feature-variables" class="section level3">
 <h3>New Feature Variables</h3>
+<p>To reduce the size of the feature space without losing important data, the following feature variables were combined to create new feature variables:</p>
+<ul>
+<li>1stFlrSF + 2ndFlrSF + TotalBsmtSF -&gt; TotalSF</li>
+<li>BsmtFullBath + FullBath -&gt; TotalFullBath</li>
+<li>BsmtHalfBath + HalfBath -&gt; TotalHalfBath</li>
+</ul>
+<p>Additionally, new categorical feature variables were created to indicate whether a given home had a garage (IsGarage) or a pool (IsPool).</p>
 </div>
-</div>
-<div id="new-features" class="section level1">
-<h1>###### New Features</h1>
-</div>
-<div id="total-sf-1stflrsf-2ndflrsf-totalbsmtsf" class="section level1">
-<h1>- Total SF = 1stFlrSF + 2ndFlrSF + TotalBsmtSF</h1>
-</div>
-<div id="totalfullbath-bsmtfullbath-fullbath" class="section level1">
-<h1>- TotalFullBath = BsmtFullBath + FullBath</h1>
-</div>
-<div id="totalhalfbath-bsmthalfbath-halfbath" class="section level1">
-<h1>- TotalHalfBath = BsmtHalfBath + HalfBath</h1>
-</div>
-<div id="ispool-categorical" class="section level1">
-<h1>- IsPool — Categorical</h1>
-</div>
-<div id="isgarage-categorical" class="section level1">
-<h1>- IsGarage — Categorical</h1>
 <div id="dummifying-feature-variables" class="section level3">
 <h3>Dummifying Feature Variables</h3>
+<p>All categorical feature variables were dummified using One Hot Encoding for use in linear refgression-based machine learning models.</p>
 </div>
-</div>
-<div id="categorical-dummify-var" class="section level1">
-<h1>#### Categorical Dummify Var</h1>
-</div>
-<div id="section-1" class="section level1">
-<h1></h1>
-</div>
-<div id="landcontour-object-4-values-dummify" class="section level1">
-<h1>- LandContour object — 4 values, dummify</h1>
-</div>
-<div id="exterior1st-object-14-values-top5vinylsd-metalsd-hdboard-wd-sdng-plywood-or-other.---roofmatl-object-dummify.-compshg-or-other" class="section level1">
-<h1>- Exterior1st object — 14 values, <strong>Top5(VinylSd, MetalSd, HdBoard, Wd Sdng, Plywood) or Other. # - RoofMatl object — Dummify. </strong>CompShg or Other</h1>
-</div>
-<div id="roofstyle-object-dummify.-gable-hip-or-other.---mszoning-object-dummify.---street-object-dummify.-2-values---alley-object-dummify.-3-values---housestyle-object-dummify.-8-values---bldgtype-object-dummify.-5-values---condition2-object-drop-redundant-with-condition1---condition1-object-dummify.-norm-or-other." class="section level1">
-<h1>- RoofStyle object — Dummify. <strong>Gable, Hip or Other. # - MSZoning object — Dummify. # - Street object — Dummify. 2 values # - Alley object — Dummify. 3 values # - HouseStyle object — Dummify. 8 values # - BldgType object — Dummify. 5 values # - Condition2 object — Drop, redundant with Condition1 # - Condition1 object — Dummify. </strong>Norm or Other.</h1>
-</div>
-<div id="exterior2nd-object-drop-redundant-with-exterior1" class="section level1">
-<h1>- Exterior2nd object — Drop, redundant with Exterior1,</h1>
-</div>
-<div id="landslope-object-dummify.-3-values" class="section level1">
-<h1>- LandSlope object — Dummify. 3 values</h1>
-</div>
-<div id="lotconfig-object-dummify.-3-values" class="section level1">
-<h1>- LotConfig object — Dummify. 3 values</h1>
-</div>
-<div id="utilities-object-drop.-1-observation" class="section level1">
-<h1>- Utilities object — Drop. 1 observation</h1>
-</div>
-<div id="lotshape-object-dummify.-reg-or-ireg---neighborhood-object-dummify.---extercond-object-dummify.---exterqual-object-dummify.---garagetype-object-dummify.---garagequal-object-drop-redundant-with-garagecond.---fireplacequ-object-dummify.-fireplace-or-no-fireplace" class="section level1">
-<h1>- LotShape object — Dummify. <strong>Reg or IReg # - Neighborhood object — Dummify. # - ExterCond object — Dummify. # - ExterQual object — Dummify. # - GarageType object — Dummify. # - GarageQual object — Drop, redundant with GarageCond. # - FireplaceQu object — Dummify. </strong>FirePlace or No Fireplace</h1>
-</div>
-<div id="paveddrive-object-dummify." class="section level1">
-<h1>- PavedDrive object — Dummify.</h1>
-</div>
-<div id="functional-object-dummify.-y-or-np-will-be-n---kitchenqual-object-dummify.---poolqc-object-drop.-ispool-col-is-created.---fence-object-dummify.---miscfeature-object-drop.-redundant-with-miscvalue---electrical-object-dummify.-sbrkr-or-other" class="section level1">
-<h1>- Functional object — Dummify. <strong>Y or N(P will be N) # - KitchenQual object — Dummify. # - PoolQC object — Drop. IsPool col is created. # - Fence object — Dummify. # - MiscFeature object — Drop. redundant with MiscValue # - Electrical object — Dummify. </strong>SBrkr or Other</h1>
-</div>
-<div id="masvnrtype-object-dummify." class="section level1">
-<h1>- MasVnrType object — Dummify.</h1>
-</div>
-<div id="centralair-object-dummify." class="section level1">
-<h1>- CentralAir object — Dummify.</h1>
-</div>
-<div id="salecondition-object-dummify." class="section level1">
-<h1>- SaleCondition object — Dummify.</h1>
-</div>
-<div id="heatingqc-object-dummify." class="section level1">
-<h1>- HeatingQC object — Dummify.</h1>
-</div>
-<div id="heating-object-dummify.-gasa-or-other---bsmtfintype2-object-drop.---bsmtfintype1-object-dummify.---bsmtexposure-object-dummify.---bsmtcond-object-dummify.---bsmtqual-object-dummify.---foundation-object-dummify.-pconc-cblock-brktil-other" class="section level1">
-<h1>- Heating object — Dummify. <strong>GasA or Other # - BsmtFinType2 object — Drop. # - BsmtFinType1 object — Dummify. # - BsmtExposure object — Dummify. # - BsmtCond object — Dummify. # - BsmtQual object — Dummify. # - Foundation object — Dummify. </strong>PConc, CBlock, BrkTil, Other</h1>
-</div>
-<div id="garagefinish-object-dummify." class="section level1">
-<h1>- GarageFinish object — Dummify.</h1>
-</div>
-<div id="saletype-object-dummify.-wd-new-cod-other---garagecond-object-dummify." class="section level1">
-<h1>- SaleType object — Dummify. **WD, New, COD, Other # - GarageCond object — Dummify.</h1>
 <div id="removed-feature-variables" class="section level3">
 <h3>Removed Feature Variables</h3>
-<p>The below is a # - Id float64 — Drop # - BsmtUnfSF float64 — Drop # - TotalBsmtSF float64 — Drop, re-engineered. # - SalePrice float64 — Target, Drop # - 1stFlrSF float64 — Drop, re-engineered. # - 2ndFlrSF float64 — Drop, re-engineered. # - LowQualFinSF float64 — Drop, 99% has value 0 # - GrLivArea float64 — Drop, correlated with total SF and rooms above ground # - BsmtFullBath float64 — Drop, re-engineered. # - BsmtHalfBath float64 — Drop, re-engineered. # - FullBath float64 — Drop, re-engineered. # - HalfBath float64 — Drop, re-engineered. # - BedroomAbvGr float64 # - KitchenAbvGr float64 # - TotRmsAbvGrd float64 # - Fireplaces float64 # - GarageYrBlt float64 — Drop, correlated with YrBuilt # - GarageCars float64 — Drop, correlated with Area # - GarageArea float64 # - WoodDeckSF float64 # - OpenPorchSF float64 — dummify 1 for OpenPorch 0 for Not OpenPorch # - EnclosedPorch float64 — dummify if porch 1, else 0 # - 3SsnPorch float64 — dummify if porch 1, else 0 # - ScreenPorch float64 — dummify if porch 1, else 0 # - PoolArea float64 — Drop, over 99% do not have pools # - MiscVal float64 — <strong>add 1 and then Log transform # - MoSold float64 — dummify # - YrSold float64 — dummify # - BsmtFinSF2 float64 — Drop # - BsmtFinSF1 float64 — Drop # - IsPool float64 — Categorical # - MSSubClass float64 — Categorical - convert back to Str # - LotFrontage float64 # - MasVnrArea float64 # - OverallQual float64 — dummify # - LotArea float64 — </strong>add 1 and then Log transform # - OverallCond float64 — dummify # - YearBuilt float64 # - YearRemodAdd float64</p>
-</div>
+<p>Some feature variables were rendered unnecessary by the engineering above. Others were so highly correlated with other variables that inclduing them violated core assumptions of linear models, and yet others had too few observations to be statistically useful.</p>
+<ul>
+<li>Target Variable: SalePrice</li>
+<li>Dropped due to no useful information: Id</li>
+<li>Dropped due to re-engineering: TotalBsmtSF, 1stFlrSF, 2ndFlrSF, BsmtFullBath, BsmtHalfBath, FullBath, HalfBath</li>
+<li>Dropped for correlation reasions: BsmtFinSF1, BsmtFinSF2, BsmtUnfSF, GrLivArea, GarageYrBlt, GarageCars</li>
+<li>Dropped for lack of observations: LowQualFinSF, PoolArea</li>
+</ul>
 </div>
 
 
