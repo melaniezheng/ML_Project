@@ -1,5 +1,6 @@
 import numpy as np
 import pandas as pd
+from scipy.stats import boxcox
 from sklearn.neighbors import KNeighborsRegressor
 from sklearn.linear_model import LogisticRegression
 from sklearn.preprocessing import OneHotEncoder
@@ -16,8 +17,15 @@ test_raw = pd.read_csv('../data/test.csv')
 
 ############### Remove Outliers ###############
 # Create a function to remove outliers identified in EDA
+# Melanie: removed more outliers based on OverallQual, GarageArea, GrLivArea. These do not 
+#           follow linear relationship with Boxcox(SalePrice)
 def remove_outliers(df):
-    df =df.drop(df[(df['GrLivArea']>4000) & (df['SalePrice']<300000)].index)
+    df['BoxCoxPrice'] =boxcox(df['SalePrice'], lmbda = 0.3)
+    df = df.drop(df[(df['GrLivArea']>4000) & (df['SalePrice']<300000)].index)
+    df = df.drop(df[(df['OverallQual']==4) & (df['BoxCoxPrice']>130)].index)
+    df = df.drop(df[(df['GarageArea']>1200) & (df['BoxCoxPrice']<140)].index)
+    df = df.drop(df[(df['GrLivArea']>4000) & (df['BoxCoxPrice']<130)].index)
+    df = df.drop(columns='BoxCoxPrice')
     return df
 
 
@@ -57,12 +65,12 @@ def impute_basements(df):
     # Encode all observations that are missing the same number of observations as the least missing feature as "No Basement"
     for i in col_list:
         if df[i].isnull().sum()==shortest_value:
-            df[i] = df[i].fillna('No Basement')
+            df[i] = df[i].fillna('None')
     
     # If a given feature is missing and that observation has been established as having No Basement above, impute as "No Basement"
     # for categorical features or 0 for numeric features.        
-    df.loc[df[shortest_key]=='No Basement', col_list] = "No Basement"
-    df.loc[df[shortest_key]=='No Basement', num_col_list] = float(0)
+    df.loc[df[shortest_key]=='None', col_list] = "None"
+    df.loc[df[shortest_key]=='None', num_col_list] = float(0)
     
     # If a given feature is missing and that observation has not already been established as No Basement or 0 above, that feature represents
     # true missingness. Fill any missing values with the mode of that feature
@@ -87,12 +95,12 @@ def impute_garages(df):
     # Encode all observations that are missing the same number of observations as the least missing feature as "No Garage"
     for i in col_list:
         if df[i].isnull().sum()==shortest_value:
-            df[i] = df[i].fillna('No Garage')
+            df[i] = df[i].fillna('None')
     
     # If a given feature is missing and that observation has been established as having No Garage above, impute as "No Garage"
     # for categorical features or 0 for numeric features.
-    df.loc[df[shortest_key]=='No Garage', col_list] = "No Garage"
-    df.loc[df[shortest_key]=='No Garage', num_col_list] = float(0)
+    df.loc[df[shortest_key]=='None', col_list] = "None"
+    df.loc[df[shortest_key]=='None', num_col_list] = float(0)
     
     # If a given feature is missing and that observation has not already been established as No Garage or 0 above, that feature represents
     # true missingness. Fill any missing values with the mode of that feature
@@ -121,7 +129,7 @@ def impute_lotfront(df):
 def impute_categorical(df):
     df['Condition1'] = df['Condition1'].apply(lambda x: "Norm" if x == "Norm" else "Other")
     df['LotShape'] = df['LotShape'].apply(lambda x: "Reg" if x == "Reg" else "IReg")
-    df['FireplaceQu'] = df['FireplaceQu'].apply(lambda x: "No Fireplace" if x== 'No Fireplace' else "Fireplace")
+    df['FireplaceQu'] = df['FireplaceQu'].apply(lambda x: "None" if x== 'No Fireplace' else "Fireplace")
     df['Functional'] = df['Functional'].apply(lambda x: "Y" if x=="Y" else "N")
     df['Electrical'] = df['Electrical'].apply(lambda x: "SBrkr" if x=='SBrkr' else 'Other')
     df['RoofMatl'] = df['RoofMatl'].apply(lambda x: "Other" if x != "CompShg" else x)
@@ -137,6 +145,23 @@ def impute_categorical(df):
     df['KitchenQual'] = df['KitchenQual'].fillna(df['KitchenQual'].mode()[0])
 
 
+# Melanie: added function to convert categorical to ordinal features. These
+#          will act like a numeric features. 
+def categorical_to_ordinal(df):
+    ord_list = ['OverallQual','OverallCond','ExterCond','ExterQual','BsmtQual',
+        'BsmtCond', 'HeatingQC','KitchenQual',
+        'GarageFinish', 'GarageQual', 'GarageCond',
+        'BsmtFinType1']
+    for col in ord_list:
+        df.loc[df[col] == 'GLQ', col] = 12
+        df.loc[df[col].isin(['Ex','ALQ']), col] = 10
+        df.loc[df[col].isin(['Gd','GdPrv','BLQ']), col] = 8
+        df.loc[df[col].isin(['TA','Av','MnPrv','Fin','Rec','Y']), col] = 6
+        df.loc[df[col].isin(['Fa','Mn','GdWo','RFn','LwQ','P']), col] = 4
+        df.loc[df[col].isin(['Po','No','MnWw','Unf','N']), col] = 2
+        df.loc[df[col] == 'None', col] = 0
+
+
 # Create a function that combines all the above functions to perform all imputation at once.
 def impute_data(df):
     impute_pseudo(df)
@@ -144,6 +169,7 @@ def impute_data(df):
     impute_garages(df)
     impute_lotfront(df)
     impute_categorical(df)
+    categorical_to_ordinal(df)
 
 
 ############### Feature Engineering/Creation ###############
@@ -166,11 +192,15 @@ def dummify_features(df):
     df['IsOpenPorch'] = df['OpenPorchSF'].apply(lambda x: 1 if x>0 else 0)
     # Dummify all other necessary features using One Hot Encoding
     temp = df.copy()
-    col_list = ['MoSold', 'YrSold', 'OverallQual', 'OverallCond', 'Exterior1st', 'Condition1', 'LotShape', 'FireplaceQu',
+    # not dummifying below categorical_to_ordinal features.
+    # ['OverallQual','OverallCond','ExterCond','ExterQual','BsmtQual',
+    #     'BsmtCond', 'HeatingQC','KitchenQual',
+    #     'GarageFinish', 'GarageQual', 'GarageCond',
+    #     'BsmtFinType1']
+    col_list = ['MoSold', 'YrSold',  'Exterior1st', 'Condition1', 'LotShape', 'FireplaceQu',
     'Functional', 'Electrical', 'RoofMatl', 'RoofStyle', 'Heating', 'Foundation', 'SaleType', "LandContour", 'MSZoning',
-    'Street', 'Alley', 'HouseStyle', 'BldgType', 'LandSlope', 'LotConfig', 'Neighborhood', 'ExterCond', 'ExterQual',
-    'GarageType', 'PavedDrive', 'KitchenQual', 'Fence', 'MasVnrType', 'CentralAir', 'SaleCondition', 'HeatingQC', 
-    'BsmtFinType1', 'BsmtExposure', 'BsmtCond', 'BsmtQual', 'GarageFinish', 'GarageCond']
+    'Street', 'Alley', 'HouseStyle', 'BldgType', 'LandSlope', 'LotConfig', 'Neighborhood', 
+    'GarageType', 'PavedDrive',  'Fence', 'MasVnrType', 'CentralAir', 'SaleCondition', 'BsmtExposure']
     ohe = OneHotEncoder(categories = 'auto', drop = None, sparse = False)
     enc = ohe.fit_transform(temp[col_list])
     enc = pd.DataFrame(enc, columns=ohe.get_feature_names(col_list))
@@ -182,7 +212,7 @@ def dummify_features(df):
 # Create a function to remove features that are either not useful for prediction (ex. 'Id') or have been rendered redundant by the above steps
 def remove_features(df):
     df = df.drop(columns=['Id','BsmtUnfSF','TotalBsmtSF','1stFlrSF','2ndFlrSF','LowQualFinSF','GrLivArea','BsmtFullBath',
-            "BsmtHalfBath",'FullBath','HalfBath','OpenPorchSF',"Condition2", "Utilities", "Exterior2nd", "GarageQual",
+            "BsmtHalfBath",'FullBath','HalfBath','OpenPorchSF',"Condition2", "Utilities", "Exterior2nd", #"GarageQual",
                           "PoolQC", "MiscFeature","BsmtFinType2"])
     return df
 
@@ -208,5 +238,5 @@ test_processed = test_raw.copy()
 test_processed = process_data(test_processed)
 
 # Save the processed datasets to CSV files
-train_processed.to_csv('../data/train_processed.csv', index = False)
-test_processed.to_csv('../data/test_processed.csv', index = False)
+train_processed.to_csv('../data/train_processed_ord.csv', index = False)
+test_processed.to_csv('../data/test_processed_ord.csv', index = False)
