@@ -4,7 +4,8 @@
 
 - /EDA - data processing, imputation and feature engineering
 
-- /Model - for modeling with ridge, lasso, elastic net, gradient boosting, catBoost, XGBoost, LightGBM, and stacked regressor models. Model visualization is also included in this folder.
+- /Model - for modeling with ridge, lasso, elastic net, gradient boosting, catBoost, XGBoost, LightGBM, and stacked regressor models. Model visualization is also included in this folder. 
+    Final Models.zip contains models that we tried and fine tuning parameters.
 
 - /Data - contains raw and processed data for this project.
 
