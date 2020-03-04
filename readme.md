@@ -1,5 +1,7 @@
 #### Kaggle Competition House Prices: Advanced Regression Techniques (link: https://www.kaggle.com/c/house-prices-advanced-regression-techniques)
 
+#### Ranked Top 14% 630/4625 on Kaggle as of March 4, 2020.
+
 #### Using machine learning techniques to predict house prices based on various house features.
 
 - /EDA - data processing, imputation and feature engineering
