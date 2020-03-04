@@ -51,6 +51,8 @@ The distribution of a large number of categorical variables was such that many o
 
 Feature variables engineered in this way were: Exterior1st, RoofMatl, RoofStyle, Condition1, LotShape, Functional, Electrical, Heating, Foundation, and SaleType.
 
+Additionally, some categorical variables represented an ordinal ranking - for instance, there were numerous variables related to the quality or condition of some housing feature, which were represented by categorical strings (such as "Excellent," "Fair," etc.). Because quality and condition are inherently ranked, we converted these variables to ordinal variables, to reduce the need for dummification.
+
 ### New Feature Variables
 To reduce the size of the feature space without losing important data, the following feature variables were combined to create new feature variables:
 

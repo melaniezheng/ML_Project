@@ -410,6 +410,7 @@ summary {
 <h4>Categorical Variables</h4>
 <p>The distribution of a large number of categorical variables was such that many of the features were dominated by a single value, with the remaining values being more sparsely populated. Because this sparsity resulted in a lack of representative data, and in an attempt to reduce the feature space expansion resulting from the need to dummify categorical features, we consolidated those categorical variables to follow the general pattern of “Dominant Class(es), Other.”</p>
 <p>Feature variables engineered in this way were: Exterior1st, RoofMatl, RoofStyle, Condition1, LotShape, Functional, Electrical, Heating, Foundation, and SaleType.</p>
+<p>Additionally, some categorical variables represented an ordinal ranking - for instance, there were numerous variables related to the quality or condition of some housing feature, which were represented by categorical strings (such as “Excellent,” “Fair,” etc.). Because quality and condition are inherently ranked, we converted these variables to ordinal variables, to reduce the need for dummification.</p>
 </div>
 </div>
 <div id="new-feature-variables" class="section level3">
