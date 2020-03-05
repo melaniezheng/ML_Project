@@ -7,7 +7,8 @@
 - /EDA - data processing, imputation and feature engineering
 
 - /Model - for modeling with ridge, lasso, elastic net, gradient boosting, catBoost, XGBoost, LightGBM, and stacked regressor models. Model visualization is also included in this folder. 
-    Final Models.zip contains models that we tried and fine tuning parameters.
+    - Final Models.zip contains models that we tried and fine tuning parameters.
+    - final_model.joblib is the final tuned and fitted model to be loaded. Productionized model.
 
 - /Data - contains raw and processed data for this project.
 
