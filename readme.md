@@ -4,6 +4,8 @@
 
 #### Using machine learning techniques to predict house prices based on various house features.
 
+#### Python Version : Python 3.7.4
+
 - /EDA - data processing, imputation and feature engineering
 
 - /Model - for modeling with ridge, lasso, elastic net, gradient boosting, catBoost, XGBoost, LightGBM, and stacked regressor models. Model visualization is also included in this folder. 
